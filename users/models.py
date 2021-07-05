@@ -34,3 +34,21 @@ class User(AbstractUser):
         
         return send_mail(title, message, settings.EMAIL_HOST_USER, [user.email], fail_silently=False)
 
+
+    def register(request):
+        title = 'регистрация'
+
+        if request.method == 'POST':
+            register_form = ShopUserRegisterForm(request.POST, request.FILES)
+            if register_form.is_valid():
+                user = register_form.save()
+                if send_verify_mail(user):
+                    print('сообщение подтверждения отправлено')
+                    return HttpResponseRedirect(reverse('users:login'))
+                else:
+                    print('ошибка отправки сообщения')
+                    return HttpResponseRedirect(reverse('users:login'))
+            else:
+                register_form = ShopUserRegisterForm()
+                content = {'title': title, 'register_form': register_form}
+                return render(request, 'user/register.html', content)
